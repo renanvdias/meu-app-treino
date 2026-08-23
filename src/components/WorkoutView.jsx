@@ -3,19 +3,15 @@ import { ArrowLeft, Check, Timer, RotateCcw } from 'lucide-react';
 import { workoutPlan } from '../data/workouts';
 
 export default function WorkoutView({ workoutId, onBack }) {
-  // Agora ele carrega o treino dinamicamente baseado na prop workoutId
   const currentWorkout = workoutPlan[workoutId]; 
   const [exercises, setExercises] = useState(currentWorkout.exercises);
-  
   const [timeLeft, setTimeLeft] = useState(90); 
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
   useEffect(() => {
     let interval = null;
     if (isTimerRunning && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((time) => time - 1);
-      }, 1000);
+      interval = setInterval(() => setTimeLeft((time) => time - 1), 1000);
     } else if (timeLeft === 0) {
       setIsTimerRunning(false);
     }
@@ -44,84 +40,74 @@ export default function WorkoutView({ workoutId, onBack }) {
     }));
   };
 
-  // Função para salvar o treino e voltar
   const finishWorkout = () => {
     const savedHistory = localStorage.getItem('workoutHistory');
     const history = savedHistory ? JSON.parse(savedHistory) : [];
-    
-    // Adiciona o treino atual ao histórico com a data de hoje
-    history.push({
-      date: new Date().toISOString(),
-      workoutId: workoutId,
-      // No futuro, podemos salvar os 'exercises' aqui para guardar as cargas que você usou
-    });
-
+    history.push({ date: new Date().toISOString(), workoutId: workoutId });
     localStorage.setItem('workoutHistory', JSON.stringify(history));
-    
-    // Volta para a tela inicial
     onBack();
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans pb-24">
-      <header className="bg-gray-800 p-4 shadow-md sticky top-0 z-10 flex items-center gap-3 border-b border-gray-700">
-        <button onClick={onBack} className="p-2 -ml-2 text-gray-400 hover:text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-28">
+      <header className="bg-white px-4 py-4 shadow-sm sticky top-0 z-10 flex items-center gap-3 border-b border-slate-100">
+        <button onClick={onBack} className="p-2 -ml-2 text-slate-400 hover:text-slate-800 transition-colors rounded-full hover:bg-slate-100">
           <ArrowLeft className="w-6 h-6" />
         </button>
         <div>
-          <h1 className="text-xl font-bold text-blue-400">{currentWorkout.title}</h1>
-          <p className="text-xs text-gray-400">Proteja a lombar. Foco na execução.</p>
+          <h1 className="text-lg font-black text-slate-900 tracking-tight">{currentWorkout.title}</h1>
+          <p className="text-[11px] text-slate-500 font-medium">Proteja a lombar. Foco na execução.</p>
         </div>
       </header>
 
-      <main className="p-4 max-w-md mx-auto space-y-4">
+      <main className="p-5 max-w-md mx-auto space-y-4">
         {exercises.map((ex) => (
           <div 
             key={ex.id} 
-            className={`rounded-xl p-4 transition-all border ${
+            className={`rounded-3xl p-5 transition-all duration-300 border ${
               ex.done 
-                ? 'bg-gray-800/50 border-gray-700 opacity-60' 
-                : 'bg-gray-800 border-gray-600 shadow-md'
+                ? 'bg-slate-100/50 border-slate-200 opacity-70 scale-[0.98]' 
+                : 'bg-white border-slate-100 shadow-sm'
             }`}
           >
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <h3 className={`font-bold text-lg ${ex.done ? 'text-gray-400 line-through' : 'text-gray-100'}`}>
+            <div className="flex justify-between items-start mb-4">
+              <div className="pr-4">
+                <h3 className={`font-bold text-lg leading-tight ${ex.done ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
                   {ex.name}
                 </h3>
-                <p className="text-xs text-yellow-500/80 mt-1">{ex.notes}</p>
+                <p className="text-xs text-amber-600/90 font-medium mt-1">{ex.notes}</p>
               </div>
               <button 
                 onClick={() => toggleDone(ex.id)}
-                className={`p-3 rounded-full flex-shrink-0 transition-colors ${
-                  ex.done ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                className={`p-4 rounded-full flex-shrink-0 transition-all ${
+                  ex.done ? 'bg-emerald-100 text-emerald-600 shadow-inner' : 'bg-slate-100 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600'
                 }`}
               >
-                <Check className="w-6 h-6" />
+                <Check className="w-6 h-6 stroke-[3px]" />
               </button>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 mt-4 items-center">
+            <div className="grid grid-cols-3 gap-3 mt-4 items-center bg-slate-50 p-3 rounded-2xl border border-slate-100">
               <div className="text-center">
-                <span className="block text-xs text-gray-400 mb-1">Séries</span>
-                <span className="font-bold text-lg">{ex.sets}x</span>
+                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Séries</span>
+                <span className="font-black text-xl text-slate-700">{ex.sets}x</span>
               </div>
               <div>
-                <label className="block text-[10px] text-gray-400 mb-1 text-center uppercase">Reps</label>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 text-center">Reps</label>
                 <input 
                   type="text" 
                   defaultValue={ex.reps}
                   disabled={ex.done}
-                  className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-center text-sm focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50"
+                  className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-center text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none disabled:bg-transparent disabled:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-[10px] text-gray-400 mb-1 text-center uppercase">Carga (kg)</label>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 text-center">Carga</label>
                 <input 
                   type="number" 
                   placeholder="0"
                   disabled={ex.done}
-                  className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-center text-sm focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50"
+                  className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-center text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none disabled:bg-transparent disabled:border-transparent"
                 />
               </div>
             </div>
@@ -129,31 +115,29 @@ export default function WorkoutView({ workoutId, onBack }) {
         ))}
       </main>
 
-      <div className="fixed bottom-0 w-full bg-gray-800 border-t border-gray-700 p-4">
+      {/* Timer Bar Clean */}
+      <div className="fixed bottom-0 w-full bg-white border-t border-slate-100 p-4 pb-safe shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.1)]">
         <div className="max-w-md mx-auto flex justify-between items-center">
-          
-          <div 
-            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-              isTimerRunning ? 'bg-blue-900/30' : 'bg-transparent'
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-colors ${
+              isTimerRunning ? 'bg-indigo-50 border border-indigo-100' : 'bg-slate-50 border border-slate-100'
             }`}
           >
-            <Timer className={`w-6 h-6 ${isTimerRunning ? 'text-blue-400 animate-pulse' : 'text-gray-500'}`} />
-            <span className={`font-mono text-2xl font-bold ${isTimerRunning ? 'text-blue-400' : 'text-gray-500'}`}>
+            <Timer className={`w-6 h-6 ${isTimerRunning ? 'text-indigo-600 animate-pulse' : 'text-slate-400'}`} />
+            <span className={`font-mono text-2xl font-black ${isTimerRunning ? 'text-indigo-600' : 'text-slate-400'}`}>
               {formatTime(timeLeft)}
             </span>
             {isTimerRunning && (
-               <button onClick={startTimer} className="ml-2 text-gray-400 hover:text-white" title="Reiniciar Timer">
+               <button onClick={startTimer} className="ml-2 text-indigo-400 hover:text-indigo-700 bg-white p-1 rounded-full shadow-sm">
                  <RotateCcw className="w-4 h-4" />
                </button>
             )}
           </div>
 
-          {/* O botão agora chama a função finishWorkout */}
           <button 
             onClick={finishWorkout}
-            className="bg-red-500/20 text-red-400 px-4 py-3 rounded-lg text-sm font-bold hover:bg-red-500/30 active:bg-red-500/40 transition-colors"
+            className="bg-rose-50 text-rose-600 px-6 py-4 rounded-2xl text-sm font-black tracking-wide hover:bg-rose-100 active:scale-95 transition-all"
           >
-            Finalizar Treino
+            FINALIZAR
           </button>
         </div>
       </div>
