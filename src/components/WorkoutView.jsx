@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Check, Timer, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Check, Timer, RotateCcw, Loader2 } from 'lucide-react';
 import { workoutPlan } from '../data/workouts';
+import { supabase } from '../supabaseClient';
 
 export default function WorkoutView({ workoutId, onBack }) {
   const currentWorkout = workoutPlan[workoutId]; 
   const [exercises, setExercises] = useState(currentWorkout.exercises);
   const [timeLeft, setTimeLeft] = useState(90); 
   const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     let interval = null;
@@ -40,12 +42,20 @@ export default function WorkoutView({ workoutId, onBack }) {
     }));
   };
 
-  const finishWorkout = () => {
-    const savedHistory = localStorage.getItem('workoutHistory');
-    const history = savedHistory ? JSON.parse(savedHistory) : [];
-    history.push({ date: new Date().toISOString(), workoutId: workoutId });
-    localStorage.setItem('workoutHistory', JSON.stringify(history));
-    onBack();
+  const finishWorkout = async () => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('workout_history')
+        .insert([{ workout_id: workoutId }]);
+        
+      if (error) throw error;
+      onBack(); // Volta para a tela inicial
+    } catch (error) {
+      console.error('Erro ao salvar treino:', error);
+      alert('Erro ao salvar. Verifique sua conexão com a internet.');
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -135,9 +145,10 @@ export default function WorkoutView({ workoutId, onBack }) {
 
           <button 
             onClick={finishWorkout}
-            className="bg-rose-50 text-rose-600 px-6 py-4 rounded-2xl text-sm font-black tracking-wide hover:bg-rose-100 active:scale-95 transition-all"
+            disabled={isSaving}
+            className="bg-rose-50 text-rose-600 px-6 py-4 rounded-2xl text-sm font-black tracking-wide hover:bg-rose-100 active:scale-95 transition-all disabled:opacity-70 flex items-center gap-2"
           >
-            FINALIZAR
+            {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'FINALIZAR'}
           </button>
         </div>
       </div>
